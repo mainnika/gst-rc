@@ -80,7 +80,7 @@ static gboolean cb_rewind(GstElement *pipeline)
 	if (gst_element_query_position(pipeline, GST_FORMAT_TIME, &pos) &&
 		gst_element_query_duration(pipeline, GST_FORMAT_TIME, &len)) {
 
-		g_debug("Rewind at %"GST_TIME_FORMAT" / %"GST_TIME_FORMAT, GST_TIME_ARGS(pos), GST_TIME_ARGS(len));
+		g_debug("Rewind at %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT, GST_TIME_ARGS(pos), GST_TIME_ARGS(len));
 	}
 
 	if (!gst_element_seek(pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,

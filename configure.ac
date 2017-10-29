@@ -7,7 +7,7 @@ AC_INIT([gst-rc],[1.0.0])
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=1.0.0
 
-AC_CONFIG_SRCDIR([src/main.c])
+AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
@@ -17,7 +17,7 @@ dnl enable mainainer mode by default
 AM_MAINTAINER_MODE([enable])
 
 dnl check for tools (compiler etc.)
-AM_PROG_CC_C_O
+AC_PROG_CXX_C_O
 
 dnl required version of libtool
 LT_PREREQ([2.2.6])
@@ -50,6 +50,7 @@ PKG_CHECK_MODULES(GST, [
     gstreamer-base-1.0         >= $GST_REQUIRED
     gstreamer-controller-1.0   >= $GST_REQUIRED
   ], [
+    AC_SUBST(GST_CXXFLAGS)
     AC_SUBST(GST_CFLAGS)
     AC_SUBST(GST_LIBS)
   ], [
@@ -81,6 +82,9 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ], [
   AC_MSG_RESULT([no])
 ])
+
+dnl use C++14
+GST_CXXFLAGS="$GST_CFLAGS -std=c++14"
                                                                                 
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories

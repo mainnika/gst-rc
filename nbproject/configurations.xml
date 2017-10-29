@@ -2,7 +2,7 @@
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="src" name="0">
-      <in>main.c</in>
+      <in>main.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -11,12 +11,10 @@
       <itemPath>.gitignore</itemPath>
       <itemPath>AUTHORS</itemPath>
       <itemPath>COPYING</itemPath>
-      <itemPath>INSTALL</itemPath>
       <itemPath>src/Makefile.am</itemPath>
       <itemPath>NEWS</itemPath>
       <itemPath>README</itemPath>
       <itemPath>configure.ac</itemPath>
-      <itemPath>nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
@@ -32,7 +30,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-g -O2"/>
+        <element flagsID="0" commonFlags="-std=c++14 -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -42,7 +40,7 @@
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
-          <cTool>
+          <ccTool flags="0">
             <incDir>
               <pElem>src</pElem>
               <pElem>.</pElem>
@@ -55,16 +53,16 @@
               <Elem>HAVE_CONFIG_H</Elem>
               <Elem>_REENTRANT</Elem>
             </preprocessorList>
-          </cTool>
+          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
           <preBuildCommand>./autogen.sh</preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="src/main.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="0">
-        </cTool>
+      <item path="src/main.cpp" ex="false" tool="1" flavor2="11">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>
