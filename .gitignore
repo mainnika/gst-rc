@@ -11,10 +11,12 @@ install-sh
 ltmain.sh
 missing
 stamp-*
-my-plugin-*.tar.*
 *~
+src/Makefile
 src/.libs
-nbproject
+src/.deps
+src/.bin
 compile
 Makefile
-src/Makefile
+*.o
+nbproject/private

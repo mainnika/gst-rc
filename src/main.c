@@ -1,139 +1,129 @@
-/* Copyright (C) 2006 Tim-Philipp Müller <tim centricular net>
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- * Alternatively, the contents of this file may be used under the
- * GNU Lesser General Public License Version 2.1 (the "LGPL"), in
- * which case the following provisions apply instead of the ones
- * mentioned above:
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
+#include <stdio.h>
+#include <gst/gst.h>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+typedef struct {
+	GstPipeline *pipeline;
+	GstElement *src;
+	GstElement *decoder;
+	GstElement *convert;
+	GstElement *sink;
+	GMainLoop *loop;
+} gst_rc_t;
 
-#include "gst-app.h"
+static gst_rc_t gst_rc;
 
-static void
-handle_file_or_directory (const gchar * filename)
+static void on_pad_added(GstElement *element, GstPad *pad)
 {
-  GError *err = NULL;
-  GDir *dir;
-  gchar *uri;
+	GstCaps *caps;
+	GstStructure *str;
+	gchar *name;
+	GstPad *convert;
+	GstPadLinkReturn ret;
 
-  if ((dir = g_dir_open (filename, 0, NULL))) {
-    const gchar *entry;
+	g_debug("pad added");
 
-    while ((entry = g_dir_read_name (dir))) {
-      gchar *path;
+	caps = gst_pad_get_current_caps(pad);
+	str = gst_caps_get_structure(caps, 0);
 
-      path = g_strconcat (filename, G_DIR_SEPARATOR_S, entry, NULL);
-      handle_file_or_directory (path);
-      g_free (path);
-    }
+	g_assert(str);
 
-    g_dir_close (dir);
-    return;
-  }
+	name = (gchar*) gst_structure_get_name(str);
 
-  if (g_path_is_absolute (filename)) {
-    uri = g_filename_to_uri (filename, NULL, &err);
-  } else {
-    gchar *curdir, *absolute_path;
+	g_debug("pad name %s", name);
 
-    curdir = g_get_current_dir ();
-    absolute_path = g_strconcat ( curdir, G_DIR_SEPARATOR_S, filename, NULL);
-    uri = g_filename_to_uri (absolute_path, NULL, &err);
-    g_free (absolute_path);
-    g_free (curdir);
-  }
+	if (g_strrstr(name, "video")) {
+		convert = gst_element_get_static_pad(gst_rc.convert, "sink");
+		g_assert(convert);
+		ret = gst_pad_link(pad, convert);
+		g_debug("pad_link returned %d\n", ret);
+		gst_object_unref(convert);
+	}
 
-  if (uri) {
-    /* great, we have a proper file:// URI, let's play it! */
-    play_uri (uri);
-  } else {
-    g_warning ("Failed to convert filename '%s' to URI: %s", filename,
-        err->message);
-    g_error_free (err);
-  }
-
-  g_free (uri);
+	gst_caps_unref(caps);
 }
 
-int
-main (int argc, char *argv[])
+static gboolean bus_callback(GstBus *bus, GstMessage *message, gpointer *ptr)
 {
-  gchar **filenames = NULL;
-  const GOptionEntry entries[] = {
-    /* you can add your won command line options here */
-    { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &filenames,
-      "Special option that collects any remaining arguments for us" },
-    { NULL, }
-  };
-  GOptionContext *ctx;
-  GError *err = NULL;
-  gint i, num;
+	gst_rc_t *app = (gst_rc_t*) ptr;
 
-  /* Before calling any GLib or GStreamer function, we must initialise
-   * the GLib threading system */
-  if (!g_thread_supported())
-    g_thread_init (NULL);
+	switch (GST_MESSAGE_TYPE(message)) {
 
-  ctx = g_option_context_new ("[FILE1] [FILE2] ...");
-  g_option_context_add_group (ctx, gst_init_get_option_group ());
-  g_option_context_add_main_entries (ctx, entries, NULL);
+	case GST_MESSAGE_ERROR:
+	{
+		gchar *debug;
+		GError *err;
 
-  if (!g_option_context_parse (ctx, &argc, &argv, &err)) {
-    g_print ("Error initializing: %s\n", GST_STR_NULL (err->message));
-    return -1;
-  }
-  g_option_context_free (ctx);
+		gst_message_parse_error(message, &err, &debug);
+		g_print("Error %s\n", err->message);
+		g_error_free(err);
+		g_free(debug);
+		g_main_loop_quit(app->loop);
+	}
+		break;
 
-  if (filenames == NULL || *filenames == NULL) {
-    g_print ("Please specify a file to play\n\n");
-    return -1;
-  }
+	case GST_MESSAGE_EOS:
+		g_print("End of stream\n");
+		g_main_loop_quit(app->loop);
+		break;
 
+	default:
+		break;
+	}
 
+	return TRUE;
+}
 
-  num = g_strv_length (filenames);
+int main(int argc, char *argv[])
+{
+	gst_rc_t *app = &gst_rc;
+	GstBus *bus;
+	GstStateChangeReturn state_ret;
 
-  for (i = 0; i < num; ++i) {
-    handle_file_or_directory (filenames[i]);
-  }
+	if (argc != 2) {
+		printf("File name not specified\n");
+		return 1;
+	}
 
-  g_strfreev (filenames);
+	gst_init(NULL, NULL);
 
-  return 0;
+	app->pipeline = (GstPipeline*) gst_pipeline_new("pipeline");
+	bus = gst_pipeline_get_bus(app->pipeline);
+	gst_bus_add_watch(bus, (GstBusFunc) bus_callback, app);
+	gst_object_unref(bus);
+
+	app->src = gst_element_factory_make("filesrc", "src");
+	app->decoder = gst_element_factory_make("decodebin", "decoder");
+	app->convert = gst_element_factory_make("videoconvert", "convert");
+	app->sink = gst_element_factory_make("aasink", "sink");
+
+	g_assert(app->src);
+	g_assert(app->decoder);
+	g_assert(app->convert);
+	g_assert(app->sink);
+
+	g_signal_connect(app->decoder, "pad-added", G_CALLBACK(on_pad_added), app->decoder);
+	g_object_set(G_OBJECT(app->src), "location", argv[1], NULL);
+
+	gst_bin_add_many(GST_BIN(app->pipeline), app->src, app->decoder, app->convert, app->sink, NULL);
+
+	if (!gst_element_link((GstElement*) app->src, app->decoder)) {
+		g_warning("failed to link src and decoder");
+	}
+
+	if (!gst_element_link(app->convert, app->sink)) {
+		g_warning("failed to link converter and sink");
+	}
+
+	state_ret = gst_element_set_state((GstElement*) app->pipeline, GST_STATE_PLAYING);
+	g_warning("set state returned %d\n", state_ret);
+
+	app->loop = g_main_loop_new(NULL, FALSE);
+	printf("Running main loop\n");
+
+	g_main_loop_run(app->loop);
+
+	state_ret = gst_element_set_state((GstElement*) app->pipeline, GST_STATE_NULL);
+	g_warning("set state null returned %d\n", state_ret);
+
+	return 0;
 }
