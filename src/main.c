@@ -73,6 +73,25 @@ static gboolean bus_callback(GstBus *bus, GstMessage *message, gpointer *ptr)
 	return TRUE;
 }
 
+static gboolean cb_rewind(GstElement *pipeline)
+{
+	gint64 pos, len;
+
+	if (gst_element_query_position(pipeline, GST_FORMAT_TIME, &pos) &&
+		gst_element_query_duration(pipeline, GST_FORMAT_TIME, &len)) {
+
+		g_debug("Rewind at %"GST_TIME_FORMAT" / %"GST_TIME_FORMAT, GST_TIME_ARGS(pos), GST_TIME_ARGS(len));
+	}
+
+	if (!gst_element_seek(pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+		GST_SEEK_TYPE_SET, 0, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE)) {
+
+		g_debug("Rewind failed!");
+	}
+
+	return TRUE;
+}
+
 int main(int argc, char *argv[])
 {
 	gst_rc_t *app = &gst_rc;
@@ -120,6 +139,7 @@ int main(int argc, char *argv[])
 	app->loop = g_main_loop_new(NULL, FALSE);
 	printf("Running main loop\n");
 
+	g_timeout_add(2000, (GSourceFunc) cb_rewind, app->pipeline);
 	g_main_loop_run(app->loop);
 
 	state_ret = gst_element_set_state((GstElement*) app->pipeline, GST_STATE_NULL);
