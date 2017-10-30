@@ -7,6 +7,9 @@ AC_INIT([gst-rc],[1.0.0])
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=1.0.0
 
+dnl required jsoncpp
+JSON_REQUIRED=1.0.0
+
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 
@@ -45,12 +48,27 @@ dnl for libgstrtsp-1.0: gstreamer-rtsp-1.0 >= $GST_REQUIRED
 dnl etc.
 dnl =======================================================================
 
+PKG_CHECK_MODULES(JSON, [
+      jsoncpp >= $JSON_REQUIRED
+  ], [
+    AC_SUBST(JSON_CFLAGS)
+    AC_SUBST(JSON_LIBS)
+  ], [
+  AC_MSG_ERROR([
+    Can't find the following jsoncpp development packages:
+
+      jsoncpp              >= $JSON_REQUIRED
+
+    Please make sure you have the necessary jsoncpp
+    development headers installed.
+  ])
+])
+
 PKG_CHECK_MODULES(GST, [
     gstreamer-1.0              >= $GST_REQUIRED
     gstreamer-base-1.0         >= $GST_REQUIRED
     gstreamer-controller-1.0   >= $GST_REQUIRED
   ], [
-    AC_SUBST(GST_CXXFLAGS)
     AC_SUBST(GST_CFLAGS)
     AC_SUBST(GST_LIBS)
   ], [
@@ -83,8 +101,8 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([no])
 ])
 
-dnl use C++14
-GST_CXXFLAGS="$GST_CFLAGS -std=c++14"
+dnl use C++11
+GST_CFLAGS="$GST_CFLAGS -std=c++11"
                                                                                 
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories

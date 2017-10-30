@@ -1,5 +1,12 @@
-#include <stdio.h>
+#include <cstdio>
 #include <gst/gst.h>
+#include <json/json.h>
+
+#include "pipeline.h"
+#include "jsonrpc.h"
+#include "easylogging++.h"
+
+INITIALIZE_EASYLOGGINGPP
 
 typedef struct {
 	GstPipeline *pipeline;

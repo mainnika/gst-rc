@@ -2,7 +2,10 @@
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="src" name="0">
+      <in>easylogging++.cpp</in>
+      <in>jsonrpc.cpp</in>
       <in>main.cpp</in>
+      <in>pipeline.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -30,9 +33,10 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c++14 -O2"/>
+        <element flagsID="0" commonFlags="-std=c++11"/>
       </flagsDictionary>
       <codeAssistance>
+        <resolveSymbolicLinks>true</resolveSymbolicLinks>
       </codeAssistance>
       <makefileType>
         <makeTool>
@@ -40,19 +44,8 @@
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
-          <ccTool flags="0">
-            <incDir>
-              <pElem>src</pElem>
-              <pElem>.</pElem>
-              <pElem>/opt/local/include/gstreamer-1.0</pElem>
-              <pElem>/opt/local/include/glib-2.0</pElem>
-              <pElem>/opt/local/lib/glib-2.0/include</pElem>
-              <pElem>/opt/local/include</pElem>
-            </incDir>
-            <preprocessorList>
-              <Elem>HAVE_CONFIG_H</Elem>
-              <Elem>_REENTRANT</Elem>
-            </preprocessorList>
+          <ccTool>
+            <standard>8</standard>
           </ccTool>
         </makeTool>
         <preBuild>
@@ -60,8 +53,52 @@
           <preBuildCommand>./autogen.sh</preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="src/main.cpp" ex="false" tool="1" flavor2="11">
+      <item path="src/easylogging++.cpp" ex="false" tool="1" flavor2="8">
         <ccTool flags="0">
+          <incDir>
+            <pElem>/opt/local/libexec/llvm-5.0/include/c++/v1</pElem>
+            <pElem>/opt/local/libexec/llvm-5.0/lib/clang/5.0.0/include</pElem>
+            <pElem>/usr/include</pElem>
+            <pElem>/System/Library/Frameworks/{framework}</pElem>
+            <pElem>/Library/Frameworks/{framework}</pElem>
+            <pElem>src</pElem>
+            <pElem>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include</pElem>
+            <pElem>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/jsonrpc.cpp" ex="false" tool="1" flavor2="8">
+        <ccTool>
+          <incDir>
+            <pElem>src</pElem>
+            <pElem>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1</pElem>
+            <pElem>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include</pElem>
+            <pElem>/opt/local/include/json</pElem>
+            <pElem>/opt/local/include</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/main.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>src</pElem>
+            <pElem>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1</pElem>
+            <pElem>/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.0.0/include</pElem>
+            <pElem>/opt/local/include/glib-2.0/glib</pElem>
+            <pElem>/opt/local/include/glib-2.0/gobject</pElem>
+            <pElem>/opt/local/include/gstreamer-1.0/gst</pElem>
+            <pElem>/opt/local/lib/glib-2.0/include</pElem>
+            <pElem>/opt/local/include/glib-2.0/glib/deprecated</pElem>
+            <pElem>/opt/local/include/glib-2.0</pElem>
+            <pElem>/opt/local/include/gstreamer-1.0</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="src/pipeline.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>src</pElem>
+          </incDir>
         </ccTool>
       </item>
     </conf>
