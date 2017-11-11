@@ -14,14 +14,31 @@
 #ifndef PIPELINE_H
 #define PIPELINE_H
 
-class Pipeline {
+#include <unordered_map>
+#include <string>
+#include <memory>
+#include <vector>
+
+#include <gst/gst.h>
+
+#include "uncopyable.h"
+
+class Pipeline : private Uncopyable {
 public:
-	
-	
-	
+	typedef std::unique_ptr<GstPipeline> pipeline_t;
+	typedef std::unique_ptr<GstElement> element_t;
+	typedef std::unordered_map<std::string, element_t> elements_map_t;
+	typedef std::pair<std::string, std::string> property_t;
+
+private:
+	elements_map_t elements;
+	pipeline_t pipeline;
+
+public:
 	Pipeline();
-	Pipeline(const Pipeline& orig);
 	virtual ~Pipeline();
+
+	void create_element(std::string& name, std::string& component, std::vector<property_t>& props);
 private:
 
 };

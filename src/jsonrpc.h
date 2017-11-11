@@ -21,7 +21,7 @@
 #include <json/json.h>
 #include <json/reader.h>
 
-#include "nocopy.h"
+#include "uncopyable.h"
 
 class JsonRpc : Uncopyable {
 public:
