@@ -18,6 +18,7 @@
 Pipeline::Pipeline()
 {
 	this->pipeline = pipeline_t(GST_PIPELINE(gst_pipeline_new("pipeline")));
+	this->relation_index = 0;
 
 	LOG(INFO) << "Pipeline created";
 }
@@ -42,6 +43,37 @@ void Pipeline::create_element(std::string& name, std::string& component, std::ve
 	this->elements.insert({name, element_t(element)});
 	gst_bin_add(GST_BIN(this->pipeline.get()), element);
 }
+
+void Pipeline::create_relation(std::string& first_name, std::string& second_name, RelationType relation_type, std::vector<std::string>& props)
 {
+	auto first = this->elements.find(first_name);
+	auto second = this->elements.find(second_name);
+	auto not_found = this->elements.end();
+
+	if (first == not_found || second == not_found) {
+		LOG(ERROR) << "Could not initialize relation " << first_name << "→" << second_name << ", some of them is not found";
+		return;
+	}
+
+	this->relation_index++;
+
+	switch (relation_type) {
+	case RelationType::Simple:
+	{
+
+		auto first_element = first->second;
+		auto second_element = second->second;
+
+		if (!gst_element_link(GST_ELEMENT(first_element.get()), GST_ELEMENT(second_element.get()))) {
+			LOG(ERROR) << "Could not initialize relation " << first_name << "→" << second_name << ", can not link elements";
+			return;
+		}
+
+		this->relations.insert({this->relation_index, std::make_tuple(std::string(), first->second, std::string(), second->second)});
+
+		break;
+	}
+	}
+	return;
 }
 
