@@ -37,6 +37,7 @@ public:
 
 	enum class RelationType {
 		Simple = 0,
+		Pad = 1,
 	};
 
 private:

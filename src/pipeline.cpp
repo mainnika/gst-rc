@@ -59,7 +59,6 @@ void Pipeline::create_relation(std::string first_name, std::string second_name, 
 	switch (relation_type) {
 	case RelationType::Simple:
 	{
-
 		auto first_element = first->second;
 		auto second_element = second->second;
 
@@ -72,7 +71,35 @@ void Pipeline::create_relation(std::string first_name, std::string second_name, 
 
 		break;
 	}
+	case RelationType::Pad:
+	{
+		if (props.size() != 2) {
+			LOG(ERROR) << "Could not initialize relation " << first_name << "→" << second_name << ", incorrect properties";
+			return;
+		}
+
+		auto first_element = first->second;
+		auto second_element = second->second;
+		auto src = props[0];
+		auto sink = props[1];
+
+		auto result = this->relations.insert({this->relation_index, std::make_tuple(src, first_element, sink, second_element)});
+
+		auto *relation = &(result.first->second);
+
+		auto handler_id = g_signal_connect(first_element, "pad-added", G_CALLBACK(&Pipeline::on_pad_added), relation);
+
+		if (handler_id == 0) {
+			LOG(ERROR) << "Could not initialize relation " << first_name << "→" << second_name << ", can not add callback";
+			return;
+		}
+
+		break;
 	}
+	}
+
+	LOG(INFO) << "Relation " << first_name << "→" << second_name << " created";
+
 	return;
 }
 
