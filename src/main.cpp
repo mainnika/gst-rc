@@ -1,8 +1,22 @@
+#include <thread>
+#include <chrono>
+
 #include "pipeline.h"
 #include "jsonrpc.h"
 #include "easylogging++.h"
 
 INITIALIZE_EASYLOGGINGPP
+
+void rewinder_thread(std::shared_ptr<Pipeline> pipeline)
+{
+	LOG(DEBUG) << "Rewinder thread started";
+
+	while (true) {
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+		LOG(DEBUG) << "Try rewind to zero";
+		pipeline->media_rewind(0);
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -22,9 +36,13 @@ int main(int argc, char *argv[])
 	pipeline->create_relation("decoder", "converter", Pipeline::RelationType::Pad, {"video", "sink"});
 	pipeline->create_relation("converter", "sink", Pipeline::RelationType::Simple);
 	
+	auto rewinder = std::thread(rewinder_thread, pipeline);
+	
 	pipeline->set_state(GST_STATE_PLAYING);
 	pipeline->run();
 	pipeline->set_state(GST_STATE_NULL);
+	
+	rewinder.join();
 	
 	return 0;
 }
