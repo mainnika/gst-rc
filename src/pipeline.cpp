@@ -124,6 +124,33 @@ void Pipeline::run()
 	g_main_loop_run(this->loop);
 }
 
+Pipeline::MediaInfo Pipeline::media_get_info()
+{
+	gint64 pos, len;
+
+	if (gst_element_query_position(GST_ELEMENT(this->pipeline.get()), GST_FORMAT_TIME, &pos)
+		&& gst_element_query_duration(GST_ELEMENT(this->pipeline.get()), GST_FORMAT_TIME, &len)) {
+		
+		LOG(DEBUG) << "Pipeline information " << pos << "/" << len;
+		return {pos, len};
+	}
+
+	LOG(ERROR) << "Can not get media info";
+	return {0, 0};
+}
+
+void Pipeline::media_rewind(gint64 new_position)
+{
+	if (gst_element_seek(GST_ELEMENT(this->pipeline.get()), 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+		GST_SEEK_TYPE_SET, new_position, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE)) {
+
+		LOG(DEBUG) << "Pipeline has been rewinded to " << new_position;
+		return;
+	}
+
+	LOG(ERROR) << "Rewind failed!";
+}
+
 void Pipeline::on_pad_added(GstElement* element, GstPad* first_pad, relation_t* relation)
 {
 	auto caps = gst_pad_get_current_caps(first_pad);

@@ -41,6 +41,11 @@ public:
 		Pad = 1,
 	};
 
+	struct MediaInfo {
+		gint64 position;
+		gint64 length;
+	};
+
 private:
 	elements_map_t elements;
 	loop_t loop;
@@ -56,6 +61,9 @@ public:
 	void create_relation(std::string first, std::string second, RelationType relation_type, std::vector<std::string> props = {});
 	void set_state(GstState state);
 	void run();
+
+	MediaInfo media_get_info();
+	void media_rewind(gint64 new_position);
 private:
 	void static on_pad_added(GstElement* element, GstPad* pad, relation_t* relation);
 	gboolean static bus_callback(GstBus *bus, GstMessage *message, Pipeline *pipeline);
