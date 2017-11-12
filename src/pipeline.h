@@ -23,11 +23,13 @@
 #include <gst/gst.h>
 
 #include "uncopyable.h"
+#include "gnu_deleter.h"
 
 class Pipeline : private Uncopyable {
 public:
 	typedef std::shared_ptr<GstPipeline> pipeline_t;
 	typedef std::shared_ptr<GstElement> element_t;
+	typedef GstElement* element_t;
 	typedef std::tuple<std::string, element_t, std::string, element_t> relation_t;
 	typedef std::pair<std::string, std::string> property_t;
 	typedef std::unordered_map<std::string, element_t> elements_map_t;

@@ -17,7 +17,7 @@
 
 Pipeline::Pipeline()
 {
-	this->pipeline = pipeline_t(GST_PIPELINE(gst_pipeline_new("pipeline")));
+	this->pipeline = pipeline_t(GST_PIPELINE(gst_pipeline_new("pipeline")), gnu_deleter());
 	this->relation_index = 0;
 
 	LOG(INFO) << "Pipeline created";
@@ -39,7 +39,7 @@ void Pipeline::create_element(std::string name, std::string component, std::vect
 		g_object_set(G_OBJECT(element), prop.first.c_str(), prop.second.c_str(), NULL);
 	}
 
-	this->elements.insert({name, element_t(element)});
+	this->elements.insert({name, element});
 	gst_bin_add(GST_BIN(this->pipeline.get()), element);
 }
 
@@ -63,7 +63,7 @@ void Pipeline::create_relation(std::string first_name, std::string second_name, 
 		auto first_element = first->second;
 		auto second_element = second->second;
 
-		if (!gst_element_link(GST_ELEMENT(first_element.get()), GST_ELEMENT(second_element.get()))) {
+		if (!gst_element_link(GST_ELEMENT(first_element), GST_ELEMENT(second_element))) {
 			LOG(ERROR) << "Could not initialize relation " << first_name << "→" << second_name << ", can not link elements";
 			return;
 		}
