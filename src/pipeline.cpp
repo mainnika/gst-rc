@@ -17,7 +17,11 @@
 
 Pipeline::Pipeline()
 {
+	gst_init(NULL, NULL);
+
 	this->pipeline = pipeline_t(GST_PIPELINE(gst_pipeline_new("pipeline")), gnu_deleter());
+	this->loop = g_main_loop_new(NULL, FALSE);
+
 	this->relation_index = 0;
 
 	LOG(INFO) << "Pipeline created";
@@ -110,6 +114,11 @@ void Pipeline::set_state(GstState state)
 	if (state_ret == GstStateChangeReturn::GST_STATE_CHANGE_FAILURE) {
 		LOG(ERROR) << "Unable to set state to " << state;
 	}
+}
+
+void Pipeline::run()
+{
+	g_main_loop_run(this->loop);
 }
 
 void Pipeline::on_pad_added(GstElement* element, GstPad* first_pad, relation_t* relation)

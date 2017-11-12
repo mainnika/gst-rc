@@ -27,9 +27,10 @@
 
 class Pipeline : private Uncopyable {
 public:
-	typedef std::shared_ptr<GstPipeline> pipeline_t;
-	typedef std::shared_ptr<GstElement> element_t;
+
 	typedef GstElement* element_t;
+	typedef GMainLoop* loop_t;
+	typedef std::shared_ptr<GstPipeline> pipeline_t;
 	typedef std::tuple<std::string, element_t, std::string, element_t> relation_t;
 	typedef std::pair<std::string, std::string> property_t;
 	typedef std::unordered_map<std::string, element_t> elements_map_t;
@@ -42,6 +43,7 @@ public:
 
 private:
 	elements_map_t elements;
+	loop_t loop;
 	pipeline_t pipeline;
 	relations_t relations;
 	uint32_t relation_index;
@@ -53,6 +55,7 @@ public:
 	void create_element(std::string name, std::string component, std::vector<property_t> props = {});
 	void create_relation(std::string first, std::string second, RelationType relation_type, std::vector<std::string> props = {});
 	void set_state(GstState state);
+	void run();
 private:
 	void static on_pad_added(GstElement* element, GstPad* pad, relation_t* relation);
 
