@@ -27,7 +27,7 @@ Pipeline::~Pipeline()
 {
 }
 
-void Pipeline::create_element(std::string& name, std::string& component, std::vector<property_t>& props)
+void Pipeline::create_element(std::string name, std::string component, std::vector<property_t> props)
 {
 
 	LOG(INFO) << "Pipeline element " << name << ":" << component << " is being created";
@@ -44,7 +44,7 @@ void Pipeline::create_element(std::string& name, std::string& component, std::ve
 	gst_bin_add(GST_BIN(this->pipeline.get()), element);
 }
 
-void Pipeline::create_relation(std::string& first_name, std::string& second_name, RelationType relation_type, std::vector<std::string>& props)
+void Pipeline::create_relation(std::string first_name, std::string second_name, RelationType relation_type, std::vector<std::string> props)
 {
 	auto first = this->elements.find(first_name);
 	auto second = this->elements.find(second_name);

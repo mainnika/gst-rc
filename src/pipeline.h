@@ -47,8 +47,8 @@ public:
 	Pipeline();
 	virtual ~Pipeline();
 
-	void create_element(std::string& name, std::string& component, std::vector<property_t>& props);
-	void create_relation(std::string& first, std::string& second, RelationType relation_type, std::vector<std::string>& props);
+	void create_element(std::string name, std::string component, std::vector<property_t> props = {});
+	void create_relation(std::string first, std::string second, RelationType relation_type, std::vector<std::string> props = {});
 private:
 
 };
