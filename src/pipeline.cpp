@@ -103,6 +103,15 @@ void Pipeline::create_relation(std::string first_name, std::string second_name, 
 	return;
 }
 
+void Pipeline::set_state(GstState state)
+{
+	auto state_ret = gst_element_set_state(GST_ELEMENT(this->pipeline.get()), state);
+
+	if (state_ret == GstStateChangeReturn::GST_STATE_CHANGE_FAILURE) {
+		LOG(ERROR) << "Unable to set state to " << state;
+	}
+}
+
 void Pipeline::on_pad_added(GstElement* element, GstPad* first_pad, relation_t* relation)
 {
 	auto caps = gst_pad_get_current_caps(first_pad);
