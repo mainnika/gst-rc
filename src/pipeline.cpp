@@ -24,6 +24,9 @@ Pipeline::Pipeline()
 
 	this->relation_index = 0;
 
+	auto bus = std::shared_ptr<GstBus>(gst_pipeline_get_bus(this->pipeline.get()), gnu_deleter());
+	gst_bus_add_watch(bus.get(), (GstBusFunc) Pipeline::bus_callback, this);
+
 	LOG(INFO) << "Pipeline created";
 }
 
@@ -155,4 +158,35 @@ void Pipeline::on_pad_added(GstElement* element, GstPad* first_pad, relation_t* 
 	}
 
 	LOG(DEBUG) << "Ignore relation " << name << "→" << sink;
+}
+
+gboolean Pipeline::bus_callback(GstBus* bus, GstMessage* message, Pipeline* pipeline)
+{
+	switch (GST_MESSAGE_TYPE(message)) {
+
+	case GST_MESSAGE_ERROR:
+	{
+		gchar *debug;
+		GError *err;
+
+		gst_message_parse_error(message, &err, &debug);
+		LOG(ERROR) << err->message;
+
+		g_error_free(err);
+		g_free(debug);
+		g_main_loop_quit(pipeline->loop);
+		break;
+	}
+
+	case GST_MESSAGE_EOS:
+	{
+		LOG(INFO) << "End of stream";
+		g_main_loop_quit(pipeline->loop);
+		break;
+	}
+	default:
+		break;
+	}
+
+	return TRUE;
 }

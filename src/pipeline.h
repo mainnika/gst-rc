@@ -58,6 +58,7 @@ public:
 	void run();
 private:
 	void static on_pad_added(GstElement* element, GstPad* pad, relation_t* relation);
+	gboolean static bus_callback(GstBus *bus, GstMessage *message, Pipeline *pipeline);
 
 };
 
