@@ -29,9 +29,8 @@ Pipeline::~Pipeline()
 
 void Pipeline::create_element(std::string name, std::string component, std::vector<property_t> props)
 {
-
 	LOG(INFO) << "Pipeline element " << name << ":" << component << " is being created";
-	auto element = gst_element_factory_make(name.c_str(), component.c_str());
+	auto element = gst_element_factory_make(component.c_str(), name.c_str());
 
 	g_assert(element);
 
