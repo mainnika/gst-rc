@@ -53,6 +53,7 @@ public:
 	void create_element(std::string name, std::string component, std::vector<property_t> props = {});
 	void create_relation(std::string first, std::string second, RelationType relation_type, std::vector<std::string> props = {});
 private:
+	void static on_pad_added(GstElement* element, GstPad* pad, relation_t* relation);
 
 };
 

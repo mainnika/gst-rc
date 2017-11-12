@@ -103,3 +103,38 @@ void Pipeline::create_relation(std::string first_name, std::string second_name, 
 	return;
 }
 
+void Pipeline::on_pad_added(GstElement* element, GstPad* first_pad, relation_t* relation)
+{
+	auto caps = gst_pad_get_current_caps(first_pad);
+	auto structure = gst_caps_get_structure(caps, 0);
+	auto name = (gchar*) gst_structure_get_name(structure);
+
+	LOG(DEBUG) << "Pad added " << name;
+
+	auto src = std::get<0>(*relation);
+	auto sink = std::get<2>(*relation);
+	auto target = std::get<3>(*relation);
+
+	LOG(DEBUG) << "Check pad relation " << src << "→" << sink;
+
+	if (g_strrstr(name, src.c_str())) {
+		auto second_pad = std::shared_ptr<GstPad>(gst_element_get_static_pad(target, sink.c_str()), gnu_deleter());
+
+		if (!second_pad) {
+			LOG(ERROR) << "Could not initialize relation " << name << "→" << sink << ", can not find sink";
+			return;
+		}
+
+		auto result = gst_pad_link(first_pad, second_pad.get());
+
+		if (result != GstPadLinkReturn::GST_PAD_LINK_OK) {
+			LOG(ERROR) << "Could not initialize relation " << name << "→" << sink << ", pad_link returned " << result;
+			return;
+		}
+
+		LOG(DEBUG) << "Pad relation initiated " << name << "→" << sink;
+		return;
+	}
+
+	LOG(DEBUG) << "Ignore relation " << name << "→" << sink;
+}
